@@ -1,39 +1,68 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## Overview of `laams_push`
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+The goal of `laams_push` is to make all the advanced functionalities of navigation in `Flutter` easy to use. We have developed a declarative URI-based router for advanced navigtion in Flutter. `laams_push` functionalities include but are not limited to deep linking, authentication based navigation, custom route transition animation and many more. 
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Deep linking
+- Navigation based on user authentication state
+- Custom animations for navigation transition
+
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+add the `laams_push` to your `pubspec.yaml` and you are good to go. 
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+Here is an example of how to use `laams_push` in your project.
 
 ```dart
-const like = 'sample';
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const LaamsApp.router(
+      pages: {
+        MyHomePage.path: MyHomePage(),
+        MyAboutPage.path: MyAboutPage(),
+      },
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  static const String path = '/';
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Laams Push')),
+      body: const Center(child: Text('Hello World!')),
+    );
+  }
+}
+
+class MyAboutPage extends StatelessWidget {
+  static const String path = '/about';
+  const MyAboutPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Laams Push')),
+      body: const Center(child: Text('My about page!')),
+    );
+  }
+}
 ```
 
-## Additional information
+## Maintainers
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+- [Najibullah Khoda Rahim](https://github.com/najibkr)
+- [Laams LLC Team](https://github.com/laams)
+
+

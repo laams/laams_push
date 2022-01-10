@@ -1,4 +1,18 @@
 include: package:flutter_lints/flutter.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+# Overriden analysis options from included linting packages:
+analyzer:
+  exclude: [build/**]
+  # language:
+  #   strict-raw-types: true
+  # strong-mode:
+  # implicit-casts: false
+  # implicit-dynamic: false
+
+# Overriden linter error and rules from included linting packages:
+linter:
+  rules:
+    avoid_print: true
+    prefer_single_quotes: true
+    cancel_subscriptions: true
+    prefer_relative_imports: true

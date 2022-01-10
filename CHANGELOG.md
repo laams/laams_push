@@ -1,3 +1,5 @@
-## 0.0.1
+# 0.0.1
 
-* TODO: Describe initial release.
+Initial Version of the library.
+
+* A simple api for using the laams_push 
