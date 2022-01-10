@@ -1,5 +1,5 @@
-<p align="center">
-<img src="https://github.com/laams_push/assets/navigator.png" height="300" alt="Navigator" />
+<p align="start">
+<img src="https://github.com/laams/laams_push/blob/dev/assets/navigator.png?raw=true" height="300" alt="Navigator" />
 </p>
 
 ## Overview of `laams_push`
