@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://github.com/laams_push/assets/navigator.png" height="300" alt="Navigator" />
+</p>
+
 ## Overview of `laams_push`
 
 The goal of `laams_push` is to make all the advanced functionalities of navigation in `Flutter` easy to use. We have developed a declarative URI-based router for advanced navigtion in Flutter. `laams_push` functionalities include but are not limited to deep linking, authentication based navigation, custom route transition animation and many more. 
