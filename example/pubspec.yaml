@@ -17,7 +17,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^1.0.0
   laams_push:
-    path: ../
+    path: "../"
 
 flutter:
   uses-material-design: true

@@ -1,47 +1,12 @@
 library laams_push;
 
-import 'package:flutter/material.dart';
-
-import 'src/laams_app.dart';
-
-export 'src/laams_app.dart';
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const LaamsApp.router(
-      pages: {
-        MyHomePage.path: MyHomePage(),
-        MyAboutPage.path: MyAboutPage(),
-      },
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  static const String path = '/';
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Laams Push')),
-      body: const Center(child: Text('Hello World!')),
-    );
-  }
-}
-
-class MyAboutPage extends StatelessWidget {
-  static const String path = '/about';
-  const MyAboutPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Laams Push')),
-      body: const Center(child: Text('My about page!')),
-    );
-  }
-}
+export 'src/adapters/laams_route_parser.dart';
+export 'src/adapters/route_authenticator.dart';
+export 'src/entities/enums/animation_type.dart';
+export 'src/entities/laams_route.dart';
+export 'src/jaguar_router_delegate.dart';
+export 'src/laams_page.dart';
+export 'src/laams_push_app.dart';
+export 'src/laams_push_app.dart';
+export 'src/state/laams_push.dart';
+export 'src/state/laams_push_provider.dart';

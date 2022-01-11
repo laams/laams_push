@@ -1,8 +1,8 @@
-<p align="start">
-<img src="https://github.com/laams/laams_push/blob/dev/assets/navigator.png?raw=true" height="300" alt="Navigator" />
-</p>
+![Navigation](https://github.com/laams/laams_push/blob/dev/assets/navigator.png?raw=true)
 
-## Overview of `laams_push`
+*Image Source: [Google*
+
+## Overview
 
 The goal of `laams_push` is to make all the advanced functionalities of navigation in `Flutter` easy to use. We have developed a declarative URI-based router for advanced navigtion in Flutter. `laams_push` functionalities include but are not limited to deep linking, authentication based navigation, custom route transition animation and many more. 
 
@@ -15,11 +15,50 @@ The goal of `laams_push` is to make all the advanced functionalities of navigati
 
 ## Getting started
 
-add the `laams_push` to your `pubspec.yaml` and you are good to go. 
+1. Add the `laams_push` to `pubspec.yaml` under `dependencies` section in your flutter project.
+
+```
+dependencies:
+  laams_push: <latest>
+```
 
 ## Usage
 
-Here is an example of how to use `laams_push` in your project.
+Lets take a look at how to use `laams_push` in your your application. 
+
+1. Provide `LaamsApp.router()` at the top of the `Widget` tree. 
+2. Provide all your `routes` as a value to `pages` property of `LaamsApp`
+
+### main.dart
+
+```dart
+void main()=> runApp(MyApp());
+
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const LaamsApp.router(
+      pages: {
+        MyHomePage.path: MyHomePage(),
+        MyAboutPage.path: MyAboutPage(),
+      },
+    );
+  }
+}
+```
+3. To navigate from one page to another inside your app, call one of the following methods
+
+```dart
+LaamsPush.push(context, '/second'); // Pushes the second page on top of the current route
+
+LaamsPush.replace(context, '/second'); // Replaces the current route with /second
+
+LaamsPush.pop(context); // Pops the current if it is not the only route in the stack
+```
+## Complete Example: 
 
 ```dart
 

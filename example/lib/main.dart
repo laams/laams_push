@@ -1,115 +1,393 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AppStateWidget(
+      child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Store',
+    home: MyStorePage(),
+  )));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class AppState {
+  AppState({
+    required this.productList,
+    this.itemsInCart = const <String>{},
+  });
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  final List<String> productList;
+  final Set<String> itemsInCart;
+
+  AppState copyWith({
+    List<String>? productList,
+    Set<String>? itemsInCart,
+  }) {
+    return AppState(
+      productList: productList ?? this.productList,
+      itemsInCart: itemsInCart ?? this.itemsInCart,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class AppStateScope extends InheritedWidget {
+  const AppStateScope(this.data, {Key? key, required Widget child})
+      : super(key: key, child: child);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  final AppState data;
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  static AppState of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<AppStateScope>()!.data;
+  }
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  bool updateShouldNotify(AppStateScope oldWidget) {
+    return data != oldWidget.data;
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class AppStateWidget extends StatefulWidget {
+  const AppStateWidget({Key? key, required this.child}) : super(key: key);
 
-  void _incrementCounter() {
+  final Widget child;
+
+  static AppStateWidgetState of(BuildContext context) {
+    return context.findAncestorStateOfType<AppStateWidgetState>()!;
+  }
+
+  @override
+  AppStateWidgetState createState() => AppStateWidgetState();
+}
+
+class AppStateWidgetState extends State<AppStateWidget> {
+  AppState _data = AppState(
+    productList: Server.getProductList(),
+  );
+
+  void setProductList(List<String> newProductList) {
+    if (newProductList != _data.productList) {
+      setState(() {
+        _data = _data.copyWith(
+          productList: newProductList,
+        );
+      });
+    }
+  }
+
+  void addToCart(String id) {
+    if (!_data.itemsInCart.contains(id)) {
+      final Set<String> newItemsInCart = Set<String>.from(_data.itemsInCart);
+      newItemsInCart.add(id);
+      setState(() {
+        _data = _data.copyWith(
+          itemsInCart: newItemsInCart,
+        );
+      });
+    }
+  }
+
+  void removeFromCart(String id) {
+    if (_data.itemsInCart.contains(id)) {
+      final Set<String> newItemsInCart = Set<String>.from(_data.itemsInCart);
+      newItemsInCart.remove(id);
+      setState(() {
+        _data = _data.copyWith(
+          itemsInCart: newItemsInCart,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppStateScope(
+      _data,
+      child: widget.child,
+    );
+  }
+}
+
+class MyStorePage extends StatefulWidget {
+  const MyStorePage({Key? key}) : super(key: key);
+  @override
+  MyStorePageState createState() => MyStorePageState();
+}
+
+class MyStorePageState extends State<MyStorePage> {
+  bool _inSearch = false;
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  void _toggleSearch(BuildContext context) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _inSearch = !_inSearch;
     });
+    AppStateWidget.of(context).setProductList(Server.getProductList());
+    _controller.clear();
+  }
+
+  void _handleSearch(BuildContext context) {
+    _focusNode.unfocus();
+    final String filter = _controller.text;
+    AppStateWidget.of(context)
+        .setProductList(Server.getProductList(filter: filter));
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            leading: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Image.network('$baseAssetURL/google-logo.png')),
+            title: _inSearch
+                ? TextField(
+                    autofocus: true,
+                    focusNode: _focusNode,
+                    controller: _controller,
+                    onSubmitted: (_) => _handleSearch(context),
+                    decoration: InputDecoration(
+                      hintText: 'Search Google Store',
+                      prefixIcon: IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: () => _handleSearch(context)),
+                      suffixIcon: IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => _toggleSearch(context)),
+                    ))
+                : null,
+            actions: [
+              if (!_inSearch)
+                IconButton(
+                    onPressed: () => _toggleSearch(context),
+                    icon: const Icon(Icons.search, color: Colors.black)),
+              const ShoppingCartIcon(),
+            ],
+            backgroundColor: Colors.white,
+            pinned: true,
+          ),
+          const SliverToBoxAdapter(
+            child: ProductListWidget(),
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+class ShoppingCartIcon extends StatelessWidget {
+  const ShoppingCartIcon({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final Set<String> itemsInCart = AppStateScope.of(context).itemsInCart;
+    final bool hasPurchase = itemsInCart.isNotEmpty;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: hasPurchase ? 17.0 : 10.0),
+          child: const Icon(
+            Icons.shopping_cart,
+            color: Colors.black,
+          ),
+        ),
+        if (hasPurchase)
+          Padding(
+            padding: const EdgeInsets.only(left: 17.0),
+            child: CircleAvatar(
+              radius: 8.0,
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
+              child: Text(
+                itemsInCart.length.toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12.0,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class ProductListWidget extends StatelessWidget {
+  const ProductListWidget({Key? key}) : super(key: key);
+
+  void _handleAddToCart(String id, BuildContext context) {
+    AppStateWidget.of(context).addToCart(id);
+  }
+
+  void _handleRemoveFromCart(String id, BuildContext context) {
+    AppStateWidget.of(context).removeFromCart(id);
+  }
+
+  Widget _buildProductTile(String id, BuildContext context) {
+    return ProductTile(
+      product: Server.getProductById(id),
+      purchased: AppStateScope.of(context).itemsInCart.contains(id),
+      onAddToCart: () => _handleAddToCart(id, context),
+      onRemoveFromCart: () => _handleRemoveFromCart(id, context),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<String> productList = AppStateScope.of(context).productList;
+    return Column(
+      children: productList
+          .map((String id) => _buildProductTile(id, context))
+          .toList(),
+    );
+  }
+}
+
+class ProductTile extends StatelessWidget {
+  const ProductTile({
+    Key? key,
+    required this.product,
+    required this.purchased,
+    required this.onAddToCart,
+    required this.onRemoveFromCart,
+  }) : super(key: key);
+  final Product product;
+  final bool purchased;
+  final VoidCallback onAddToCart;
+  final VoidCallback onRemoveFromCart;
+
+  @override
+  Widget build(BuildContext context) {
+    Color getButtonColor(Set<MaterialState> states) {
+      return purchased ? Colors.grey : Colors.black;
+    }
+
+    BorderSide getButtonSide(Set<MaterialState> states) {
+      return BorderSide(
+        color: purchased ? Colors.grey : Colors.black,
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        vertical: 15,
+        horizontal: 40,
+      ),
+      color: const Color(0xfff8f8f8),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(product.title),
+          ),
+          Text.rich(
+            product.description,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: OutlinedButton(
+              child: purchased
+                  ? const Text("Remove from cart")
+                  : const Text("Add to cart"),
+              style: ButtonStyle(
+                foregroundColor:
+                    MaterialStateProperty.resolveWith(getButtonColor),
+                side: MaterialStateProperty.resolveWith(getButtonSide),
+              ),
+              onPressed: purchased ? onRemoveFromCart : onAddToCart,
+            ),
+          ),
+          Image.network(product.pictureURL),
+        ],
+      ),
+    );
+  }
+}
+
+// The code below is for the dummy server, and you should not need to modify it
+// in this workshop.
+
+const String baseAssetURL =
+    'https://dartpad-workshops-io2021.web.app/inherited_widget/assets';
+
+const Map<String, Product> kDummyData = {
+  '0': Product(
+    id: '0',
+    title: 'Explore Pixel phones',
+    description: TextSpan(children: <TextSpan>[
+      TextSpan(
+          text: 'Capture the details.\n',
+          style: TextStyle(color: Colors.black)),
+      TextSpan(
+          text: 'Capture your world.', style: TextStyle(color: Colors.blue)),
+    ]),
+    pictureURL: '$baseAssetURL/pixels.png',
+  ),
+  '1': Product(
+    id: '1',
+    title: 'Nest Audio',
+    description: TextSpan(children: <TextSpan>[
+      TextSpan(text: 'Amazing sound.\n', style: TextStyle(color: Colors.green)),
+      TextSpan(text: 'At your command.', style: TextStyle(color: Colors.black)),
+    ]),
+    pictureURL: '$baseAssetURL/nest.png',
+  ),
+  '2': Product(
+    id: '2',
+    title: 'Nest Audio Entertainment packages',
+    description: TextSpan(children: <TextSpan>[
+      TextSpan(
+          text: 'Built for music.\n', style: TextStyle(color: Colors.orange)),
+      TextSpan(text: 'Made for you.', style: TextStyle(color: Colors.black)),
+    ]),
+    pictureURL: '$baseAssetURL/nest-audio-packages.png',
+  ),
+  '3': Product(
+    id: '3',
+    title: 'Nest Home Security packages',
+    description: TextSpan(children: <TextSpan>[
+      TextSpan(text: 'Your home,\n', style: TextStyle(color: Colors.black)),
+      TextSpan(text: 'safe and sound.', style: TextStyle(color: Colors.red)),
+    ]),
+    pictureURL: '$baseAssetURL/nest-home-packages.png',
+  ),
+};
+
+class Server {
+  static Product getProductById(String id) {
+    return kDummyData[id]!;
+  }
+
+  static List<String> getProductList({String? filter}) {
+    if (filter == null) {
+      return kDummyData.keys.toList();
+    }
+    final List<String> ids = <String>[];
+    for (final Product product in kDummyData.values) {
+      if (product.title.toLowerCase().contains(filter.toLowerCase())) {
+        ids.add(product.id);
+      }
+    }
+    return ids;
+  }
+}
+
+class Product {
+  const Product(
+      {required this.id,
+      required this.pictureURL,
+      required this.title,
+      required this.description});
+
+  final String id;
+  final String pictureURL;
+  final String title;
+  final TextSpan description;
 }

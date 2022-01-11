@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'entities/laams_route.dart';
+import 'laams_page.dart';
+
 /// Use LaamsApp.router at the top of your widget tree.
-/// [LaamsApp] implements MaterialApp.router under
+/// [LaamsPushApp] implements MaterialApp.router under
 /// the hood.
 /// `LaamsApp.router(
 ///
@@ -12,8 +15,10 @@ import 'package:flutter/material.dart';
 ///   }
 ///
 /// );
-class LaamsApp extends StatelessWidget {
-  final Map<String, Widget> pages;
+///
+
+class LaamsPushApp extends StatelessWidget {
+  final LaamsPage Function(LaamsRoute name) onGeneratePages;
   final GlobalKey<NavigatorState>? navigatorKey;
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
   final Widget? home;
@@ -52,9 +57,9 @@ class LaamsApp extends StatelessWidget {
   final ScrollBehavior? scrollBehavior;
   final bool debugShowMaterialGrid;
   final bool useInheritedMediaQuery;
-  const LaamsApp.router({
+  const LaamsPushApp.router({
     Key? key,
-    this.pages = const <String, Widget>{},
+    required this.onGeneratePages,
     this.navigatorKey,
     this.scaffoldMessengerKey,
     this.home,
