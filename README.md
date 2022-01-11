@@ -6,6 +6,9 @@
 
 The goal of `laams_push` is to make all the advanced functionalities of navigation in `Flutter` easy to use. We have developed a declarative URI-based router for advanced navigtion in Flutter. `laams_push` functionalities include but are not limited to deep linking, authentication based navigation, custom route transition animation and many more. 
 
+This is the syntax of a URI: 
+![Navigation](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/URI_syntax_diagram.svg/1068px-URI_syntax_diagram.svg.png)
+
 ## Features
 
 - Deep linking
