@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'entities/laams_route.dart';
 import 'laams_page.dart';
-import 'state/laams_push.dart';
+import 'laams_push.dart';
 
 class LaamsRouterDelegate extends RouterDelegate<LaamsRoutes>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<LaamsRoutes> {
@@ -11,7 +11,9 @@ class LaamsRouterDelegate extends RouterDelegate<LaamsRoutes>
   final LaamsPage Function(LaamsRoute name) onGeneratePages;
   LaamsRouterDelegate(this.laamsPush, this.onGeneratePages)
       : navigatorKey = GlobalKey<NavigatorState>(),
-        super();
+        super() {
+    laamsPush.addListener(notifyListeners);
+  }
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
@@ -21,13 +23,16 @@ class LaamsRouterDelegate extends RouterDelegate<LaamsRoutes>
 
   @override
   Future<void> setNewRoutePath(LaamsRoutes configuration) {
-    laamsPush.onSetRoutes(configuration, true);
+    laamsPush.setRoutes(configuration, true);
     return SynchronousFuture<void>(null);
   }
 
   bool _onPopPage(Route<dynamic> route, dynamic result) {
     final bool success = route.didPop(result);
-    if (success && laamsPush.routes.length > 1) laamsPush.onPop();
+    if (success && laamsPush.routes.length > 1) {
+      laamsPush.pop();
+      notifyListeners();
+    }
     return success;
   }
 
@@ -40,5 +45,11 @@ class LaamsRouterDelegate extends RouterDelegate<LaamsRoutes>
       ),
       onPopPage: _onPopPage,
     );
+  }
+
+  @override
+  void dispose() {
+    laamsPush.removeListener(notifyListeners);
+    super.dispose();
   }
 }

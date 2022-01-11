@@ -37,7 +37,9 @@ class LaamsPushProvider extends StatefulWidget {
 
 class _LaamsPushProviderState extends State<LaamsPushProvider> {
   bool isSignedIn = false;
-  LaamsRoutes _routes = [];
+  LaamsRoutes _routes = [
+    const LaamsRoute.init(name: '/'),
+  ];
 
   @override
   void initState() {
@@ -45,8 +47,20 @@ class _LaamsPushProviderState extends State<LaamsPushProvider> {
     isSignedIn = widget.isSignedIn;
   }
 
+  @override
+  void didUpdateWidget(covariant LaamsPushProvider oldWidget) {
+    if (widget.child != oldWidget.child) {
+      setState(() {});
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
   void _setRoutes(List<LaamsRoute> routes, bool init) {
-    setState(() => _routes = routes);
+    if (init) {
+      _routes = routes;
+    } else {
+      setState(() => _routes = routes);
+    }
 
     // void setRoutes(List<JaguarRoute> newRoutes, bool init) {
     //   var generatedRoute = JaguarNavSetup.authenticateRoutes(
@@ -78,34 +92,35 @@ class _LaamsPushProviderState extends State<LaamsPushProvider> {
     // }
   }
 
-  /// Call this to push a route to the stack.
-  // void push(JaguarRoute newRoute) {
-  //   if (_routes.last.path != newRoute.path) {
-  //     var generatedRoute = JaguarNavSetup.authenticateRoute(
-  //       currentRoutes: _routes,
-  //       route: newRoute,
-  //       data: _data,
-  //     );
-  //     _routes = generatedRoute;
-  //     notifyListeners();
-  //   }
-  // }
+  // / Call this to replace the last route with a new one.
+  void _replace(LaamsRoute route) {
+    if (_routes.isNotEmpty) {
+      setState(() {
+        _routes.removeLast();
+        _routes.add(route);
+      });
+    }
+
+    // if (_routes.isNotEmpty) {
+    //   _routes.removeLast();
+    // }
+    // if (!_routes.any((e) => e.path == newRoute.path)) {
+    //   var generatedRoute = JaguarNavSetup.authenticateRoute(
+    //     currentRoutes: _routes,
+    //     route: newRoute,
+    //     data: _data,
+    //   );
+    //   _routes = generatedRoute;
+    //   notifyListeners();
+    // }
+  }
 
   // / Call this to replace the last route with a new one.
-  // void replace(JaguarRoute newRoute) {
-  //   if (_routes.isNotEmpty) {
-  //     _routes.removeLast();
-  //   }
-  //   if (!_routes.any((e) => e.path == newRoute.path)) {
-  //     var generatedRoute = JaguarNavSetup.authenticateRoute(
-  //       currentRoutes: _routes,
-  //       route: newRoute,
-  //       data: _data,
-  //     );
-  //     _routes = generatedRoute;
-  //     notifyListeners();
-  //   }
-  // }
+  void _replaceAll(LaamsRoute route) {
+    setState(() {
+      _routes = List<LaamsRoute>.from([route]);
+    });
+  }
 
   void _pop() {
     if (_routes.length >= 2) {
@@ -127,9 +142,11 @@ class _LaamsPushProviderState extends State<LaamsPushProvider> {
   @override
   Widget build(BuildContext context) {
     return LaamsPush(
+      onReplaceAll: _replaceAll,
       onSetRoutes: _setRoutes,
       onPop: _pop,
       onPush: _push,
+      onReplace: _replace,
       routes: _routes,
       child: widget.child,
     );

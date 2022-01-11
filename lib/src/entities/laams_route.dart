@@ -78,4 +78,25 @@ class LaamsRoute {
   @override
   int get hashCode =>
       name.hashCode ^ fragment.hashCode ^ arguments.hashCode ^ state.hashCode;
+
+  @override
+  String toString() {
+    return name;
+  }
+
+  static Uri fromRoutes(List<LaamsRoute> routes) {
+    var newRoutes = routes.map((e) => e).toList();
+    return Uri(path: newRoutes.join(''));
+  }
+
+  static List<LaamsRoute> routesFromURI(Uri uri) {
+    var paths = uri.pathSegments;
+    // paths.insert(0, '/');
+    List<LaamsRoute> newRoutes = [];
+    for (var path in paths) {
+      final route = LaamsRoute.init(name: path);
+      newRoutes.add(route);
+    }
+    return newRoutes;
+  }
 }

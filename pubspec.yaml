@@ -1,5 +1,7 @@
 name: laams_push
-description: A declarative URI-based router for advanced navigation in Flutter, tailored for deep linking, user auth-based navigation, custom transition animations, ease of use, and many more.
+description: A declarative URI-based router for advanced navigation in Flutter,
+  tailored for deep linking, user auth-based navigation, custom transition
+  animations, ease of use, and many more.
 version: 0.0.3
 homepage: https://laams.io
 repository: https://github.com/laams/laams_push
@@ -12,11 +14,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_bloc: ^8.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^1.0.4
 
-flutter:
+flutter: null

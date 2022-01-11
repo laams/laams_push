@@ -5,30 +5,22 @@ import '../entities/laams_route.dart';
 
 class LaamsRouteParser extends RouteInformationParser<LaamsRoutes> {
   final String initialRoute;
-  LaamsRouteParser(this.initialRoute);
+  LaamsRouteParser([this.initialRoute = '/']);
   @override
   Future<LaamsRoutes> parseRouteInformation(RouteInformation routeInformation) {
-    var newState = routeInformation.state;
-    var segs = Uri.parse(routeInformation.location ?? '').pathSegments;
-    var initRoute = LaamsRoute.init(name: initialRoute);
-    if (segs.isEmpty) return SynchronousFuture([initRoute]);
-    List<LaamsRoute> routes = [];
-    segs = segs.toSet().toList();
-    for (var segment in segs) {
-      var newRoute = const LaamsRoute.init(name: '');
-      if (segment.contains('id=')) {
-        routes.add(newRoute.copyWith(name: '/$segment', state: newState));
-      } else {
-        routes.add(newRoute.copyWith(name: '/$segment', state: newState));
-      }
+    final location = routeInformation.location;
+    if (location == null) {
+      return SynchronousFuture([LaamsRoute.init(name: initialRoute)]);
+    } else if (location == '/') {
+      return SynchronousFuture([LaamsRoute.init(name: initialRoute)]);
     }
-    return SynchronousFuture(routes);
+    final uri = Uri.parse(location);
+    return SynchronousFuture(LaamsRoute.routesFromURI(uri));
   }
 
   @override
   RouteInformation? restoreRouteInformation(LaamsRoutes configuration) {
-    var rs = configuration.map((e) => e.name).toList();
-    var state = configuration.last.state;
-    return RouteInformation(location: rs.join(), state: state);
+    var uri = LaamsRoute.fromRoutes(configuration);
+    return RouteInformation(location: uri.path);
   }
 }
