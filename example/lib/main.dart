@@ -2,130 +2,232 @@ import 'package:flutter/material.dart';
 import 'package:laams_push/laams_push.dart';
 import 'package:provider/provider.dart';
 
+/// A Bloc for keeping the state of the user
+/// You can use a package of of your choice
+/// For this app, ChangeNotifier with Provider has been chosen.
+class UserBloc with ChangeNotifier {
+  bool _isSignedIn = false;
+  bool get isSignedIn => _isSignedIn;
+  void signIn() {
+    _isSignedIn = true;
+    notifyListeners();
+  }
+
+  void signOut() {
+    _isSignedIn = false;
+    notifyListeners();
+  }
+}
+
+// Product Enttiy
+class Product {
+  final int id;
+  final String name;
+  const Product({required this.id, required this.name});
+
+  Product copyWith({int? id, String? name}) {
+    return Product(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(id: json['id'], name: json['name']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'id': id, 'name': name};
+  }
+}
+
+/// You can use any state management solution.
+class ProductBloc with ChangeNotifier {
+  List<Product> _products = [];
+  List<Product> get products => List<Product>.unmodifiable(_products);
+  ProductBloc() {
+    _products = productsFakeRepo;
+  }
+
+  void getProducts() {
+    _products = productsFakeRepo;
+    notifyListeners();
+  }
+
+  List<Product> productsFakeRepo = List<Product>.generate(100, (index) {
+    return Product(id: index, name: 'My Product $index');
+  });
+}
+
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => LaamsPush(),
-      child: const MyMainApp(),
-    ),
-  );
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => UserBloc()),
+      ChangeNotifierProvider(create: (_) => ProductBloc()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
-class MyMainApp extends StatelessWidget {
-  const MyMainApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final laamsPush = context.read<LaamsPush>();
-    return MaterialApp.router(
-      routerDelegate: LaamsRouterDelegate(
-        laamsPush,
-        (route) {
-          switch (route.name) {
-            case MyHomePage.name:
-              return LaamsPage.fromRoute(route, const MyHomePage());
-            case MySecondPage.name:
-              return LaamsPage.fromRoute(route, const MySecondPage());
-            case MyThirdPage.name:
-              return LaamsPage.fromRoute(
-                route,
-                MyThirdPage(argument: route.arguments as Text),
-              );
-            default:
-              return LaamsPage.fromRoute(route, const MyHomePage());
-          }
-        },
-      ),
-      routeInformationParser: LaamsRouteParser('/'),
+    final userBloc = context.watch<UserBloc>();
+    return LaamsPushApp.router(
+      isUserSignedIn: userBloc.isSignedIn,
+      theme: ThemeData.light(),
+      title: 'Laams Router Application',
+      publicRoutes: const [SignInScreen.name, NotAllowedScreen.name],
+      notAllowedRoute: NotAllowedScreen.name,
+      onGeneratePages: (LaamsRoute route) {
+        switch (route.name) {
+          case HomeScreen.name:
+            return LaamsPage.fromRoute(route, const HomeScreen());
+          case SignInScreen.name:
+            return LaamsPage.fromRoute(route, const SignInScreen());
+          case ProductsScreen.name:
+            return LaamsPage.fromRoute(route, const ProductsScreen());
+          case ProductDetail.name:
+            final product = Product.fromJson(route.query!);
+            return LaamsPage.fromRoute(route, ProductDetail(product));
+          case NotAllowedScreen.name:
+            return LaamsPage.fromRoute(route, NotAllowedScreen(route));
+          default:
+            return LaamsPage.fromRoute(route, NotFoundScreen(route));
+        }
+      },
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+/// It `must` be called as the default in [LaamsPushApp.onGeneratePages],
+class NotFoundScreen extends StatelessWidget {
+  final LaamsRoute route;
+  static const String name = '/notfound';
+  const NotFoundScreen(this.route, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Cound Not Find ${route.name.toUpperCase()}')),
+      body: Center(
+        child: TextButton(
+          onPressed: () => LaamsPush.replace(context, HomeScreen.name),
+          child: const Text('Could Find the page, go back home?'),
+        ),
+      ),
+    );
+  }
+}
+
+/// It should be called as one of the pages of in
+/// [LaamsPushApp.onGeneratePages].
+/// By default all pages are protect, an unsigned in user is not
+/// allowed to access. if they do this page is displayed.
+class NotAllowedScreen extends StatelessWidget {
+  final LaamsRoute route;
+  static const String name = '/notAllowed';
+  const NotAllowedScreen(this.route, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Not allowed to access')),
+      body: Center(
+        child: TextButton(
+          onPressed: () => LaamsPush.replace(context, SignInScreen.name),
+          child: const Text(
+            'You are not signed in to access,Click to go to Signin Page',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// If the user is not signed in, this page is displayed to the user.
+/// It `must` be passed as public route.
+class SignInScreen extends StatelessWidget {
+  static const String name = '/signin';
+  const SignInScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Signin Screen')),
+      body: Center(
+        child: TextButton(
+          onPressed: context.read<UserBloc>().signIn,
+          child: const Text('Sign In'),
+        ),
+      ),
+    );
+  }
+}
+
+/// The first page automatically displayed after signinin
+/// it must the first route to be decalared.
+class HomeScreen extends StatelessWidget {
   static const String name = '/';
-  const MyHomePage({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final signout = TextButton(
+      onPressed: () => context.read<UserBloc>().signOut(),
+      child: const Text("Signout", style: TextStyle(color: Colors.white)),
+    );
     return Scaffold(
-      appBar: AppBar(title: const Text('Home Page')),
+      appBar: AppBar(title: const Text('Home Screen'), actions: [signout]),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: () => context
-                  .read<LaamsPush>()
-                  .push(const LaamsRoute.init(name: MySecondPage.name)),
-              child: const Text('Go to Second'),
-            ),
-          ],
+        child: TextButton(
+          onPressed: () => LaamsPush.push(context, ProductsScreen.name),
+          child: const Text('Go to Products Screen'),
         ),
       ),
     );
   }
 }
 
-class MySecondPage extends StatelessWidget {
-  static const String name = '/second';
-  const MySecondPage({Key? key}) : super(key: key);
+class ProductsScreen extends StatelessWidget {
+  static const String name = '/products';
+  const ProductsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Second Page')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: () => context.read<LaamsPush>().push(
-                    const LaamsRoute.init(
-                      name: MyThirdPage.name,
-                      arguments: Text("How are you today"),
-                    ),
-                  ),
-              child: const Text('Go to Third'),
-            ),
-            TextButton(
-              onPressed: () => context.read<LaamsPush>().pop(),
-              child: const Text('Go to Home'),
-            ),
-          ],
+    final productsList = Consumer<ProductBloc>(
+      builder: (context, bloc, _) => ListView.builder(
+        itemBuilder: (context, index) => ListTile(
+          onTap: () => LaamsPush.push(
+            context,
+            ProductDetail.name,
+            query: bloc.products[index].toJson(),
+          ),
+          title: Text(bloc.products[index].name),
+          subtitle: Text('${bloc.products[index].id}'),
         ),
       ),
+    );
+    return Scaffold(
+      appBar: AppBar(title: const Text('Products Screen')),
+      body: productsList,
     );
   }
 }
 
-class MyThirdPage extends StatelessWidget {
-  static const String name = '/third';
-  final Text argument;
-  const MyThirdPage({Key? key, required this.argument}) : super(key: key);
+class ProductDetail extends StatelessWidget {
+  static const String name = '/product';
+  final Product product;
+  const ProductDetail(this.product, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Second Page')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            argument,
-            // TextButton(
-            //   onPressed: () => LaamsPush.pop(context),
-            //   child: const Text('Go to Second'),
-            // ),
-            // TextButton(
-            //   onPressed: () => LaamsPush.replace(context, MySecondPage.name),
-            //   child: const Text('Replace With Second'),
-            // ),
-            // TextButton(
-            //   onPressed: () => LaamsPush.replaceAll(context, MyHomePage.name),
-            //   child: const Text('Go to Home'),
-            // ),
-          ],
-        ),
+      appBar: AppBar(title: Text('About ${product.name}')),
+      body: ListTile(
+        onTap: () => LaamsPush.pop(context),
+        title: Text(product.name),
+        subtitle: Text('${product.id}'),
+        trailing: const Icon(Icons.close),
       ),
     );
   }
