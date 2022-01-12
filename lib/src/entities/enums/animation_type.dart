@@ -25,3 +25,14 @@ enum AnimationType {
   /// based on [Directionality] of either `rtl` or `ltr`
   slideToEnd,
 }
+
+extension AnimationTypeParser on AnimationType {
+  static AnimationType fromName(String? name) {
+    if (name == null) return AnimationType.none;
+    try {
+      return AnimationType.values.firstWhere((e) => e.name == name);
+    } catch (e) {
+      return AnimationType.none;
+    }
+  }
+}

@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 
+import 'adapters/laams_route_parser.dart';
+import 'adapters/route_authenticator.dart';
 import 'entities/laams_route.dart';
 import 'laams_page.dart';
+import 'laams_router_delegate.dart';
+import 'state/laams_push_state.dart';
 
-/// Use LaamsApp.router at the top of your widget tree.
-/// [LaamsPushApp] implements MaterialApp.router under
-/// the hood.
-/// `LaamsApp.router(
-///
-/// pages: <String, Widget>{
-/// '/': HomePage(),
-/// '/signin/: SigninPage(),
-///
-///   }
-///
-/// );
-///
-
-class LaamsPushApp extends StatelessWidget {
-  final LaamsPage Function(LaamsRoute name) onGeneratePages;
-  final GlobalKey<NavigatorState>? navigatorKey;
+class LaamsPushApp extends StatefulWidget {
+  final bool isUserSignedIn;
+  final List<String> publicRoutes;
+  final String? notAllowedRoute;
+  final LaamsPage Function(LaamsRoute route) onGeneratePages;
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
+  final RouteInformationProvider? routeInformationProvider;
   final Widget? home;
   final Map<String, WidgetBuilder>? routes;
   final String? initialRoute;
@@ -28,9 +21,6 @@ class LaamsPushApp extends StatelessWidget {
   final InitialRouteListFactory? onGenerateInitialRoutes;
   final RouteFactory? onUnknownRoute;
   final List<NavigatorObserver>? navigatorObservers;
-  final RouteInformationProvider? routeInformationProvider;
-  final RouteInformationParser<Object>? routeInformationParser;
-  final RouterDelegate<Object>? routerDelegate;
   final BackButtonDispatcher? backButtonDispatcher;
   final TransitionBuilder? builder;
   final String title;
@@ -59,8 +49,11 @@ class LaamsPushApp extends StatelessWidget {
   final bool useInheritedMediaQuery;
   const LaamsPushApp.router({
     Key? key,
+    required this.isUserSignedIn,
+    required this.notAllowedRoute,
+    required this.publicRoutes,
     required this.onGeneratePages,
-    this.navigatorKey,
+    this.routeInformationProvider,
     this.scaffoldMessengerKey,
     this.home,
     this.routes,
@@ -69,9 +62,6 @@ class LaamsPushApp extends StatelessWidget {
     this.onGenerateInitialRoutes,
     this.onUnknownRoute,
     this.navigatorObservers,
-    this.routeInformationProvider,
-    this.routeInformationParser,
-    this.routerDelegate,
     this.backButtonDispatcher,
     this.builder,
     this.title = '',
@@ -80,7 +70,7 @@ class LaamsPushApp extends StatelessWidget {
     this.darkTheme,
     this.highContrastTheme,
     this.highContrastDarkTheme,
-    this.themeMode,
+    this.themeMode = ThemeMode.system,
     this.color,
     this.locale,
     this.localizationsDelegates,
@@ -91,7 +81,7 @@ class LaamsPushApp extends StatelessWidget {
     this.checkerboardRasterCacheImages = false,
     this.checkerboardOffscreenLayers = false,
     this.showSemanticsDebugger = false,
-    this.debugShowCheckedModeBanner = true,
+    this.debugShowCheckedModeBanner = false,
     this.shortcuts,
     this.actions,
     this.restorationScopeId,
@@ -101,22 +91,73 @@ class LaamsPushApp extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<LaamsPushApp> createState() => _LaamsPushAppState();
+}
+
+class _LaamsPushAppState extends State<LaamsPushApp> {
+  late final LaamsPushState _state;
+  @override
+  void initState() {
+    _state = LaamsPushState(
+      widget.isUserSignedIn,
+      RouteAuthenticator(
+        publicRoutes: widget.publicRoutes,
+        notAllowedRoute: widget.notAllowedRoute ?? '/notallowed',
+      ),
+    );
+    // _state.setIsSignedIn(widget.isUserSignedIn);
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant LaamsPushApp oldWidget) {
+    _state.setIsSignedIn(widget.isUserSignedIn);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    _state.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      onGenerateTitle: onGenerateTitle,
-      title: title,
-      debugShowCheckedModeBanner: debugShowCheckedModeBanner,
-      showPerformanceOverlay: showPerformanceOverlay,
-      showSemanticsDebugger: showSemanticsDebugger,
-      debugShowMaterialGrid: debugShowMaterialGrid,
-      useInheritedMediaQuery: useInheritedMediaQuery,
-      checkerboardOffscreenLayers: checkerboardOffscreenLayers,
-      checkerboardRasterCacheImages: checkerboardRasterCacheImages,
-      locale: locale,
-      supportedLocales: supportedLocales,
-      localizationsDelegates: localizationsDelegates,
-      localeResolutionCallback: localeResolutionCallback,
-      theme: theme,
+    final routerDelegate = LaamsRouterDelegate(
+      _state,
+      widget.onGeneratePages,
+    );
+    return MaterialApp.router(
+      scaffoldMessengerKey: widget.scaffoldMessengerKey,
+      routeInformationProvider: widget.routeInformationProvider,
+      routeInformationParser: const LaamsRouteParser(),
+      routerDelegate: routerDelegate,
+      backButtonDispatcher: widget.backButtonDispatcher,
+      builder: widget.builder,
+      title: widget.title,
+      onGenerateTitle: widget.onGenerateTitle,
+      color: widget.color,
+      theme: widget.theme,
+      darkTheme: widget.darkTheme,
+      highContrastTheme: widget.highContrastTheme,
+      highContrastDarkTheme: widget.highContrastDarkTheme,
+      themeMode: widget.themeMode,
+      locale: widget.locale,
+      localizationsDelegates: widget.localizationsDelegates,
+      localeListResolutionCallback: widget.localeListResolutionCallback,
+      localeResolutionCallback: widget.localeResolutionCallback,
+      supportedLocales: widget.supportedLocales,
+      debugShowMaterialGrid: widget.debugShowMaterialGrid,
+      showPerformanceOverlay: widget.showPerformanceOverlay,
+      checkerboardRasterCacheImages: widget.checkerboardRasterCacheImages,
+      checkerboardOffscreenLayers: widget.checkerboardOffscreenLayers,
+      showSemanticsDebugger: widget.showSemanticsDebugger,
+      debugShowCheckedModeBanner: widget.debugShowCheckedModeBanner,
+      shortcuts: widget.shortcuts,
+      actions: widget.actions,
+      restorationScopeId: widget.restorationScopeId,
+      scrollBehavior: widget.scrollBehavior,
+      useInheritedMediaQuery: widget.useInheritedMediaQuery,
     );
   }
 }

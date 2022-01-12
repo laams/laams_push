@@ -1,0 +1,96 @@
+import 'package:flutter/material.dart';
+
+import '../adapters/route_authenticator.dart';
+import '../entities/laams_route.dart';
+import '../laams_router_delegate.dart';
+
+/// Keeps the state of the navigator stack.
+/// However you usually do not have to interact with it directly.
+class LaamsPushState extends ChangeNotifier {
+  bool _isSignedIn = false;
+  bool get isSignedIn => _isSignedIn;
+  final List<LaamsRoute> _routes = <LaamsRoute>[];
+  List<LaamsRoute> get routes => List.unmodifiable(_routes);
+  final RouteAuthenticator _auth;
+  LaamsPushState(
+    bool isSignedIn,
+    RouteAuthenticator auth,
+  )   : _isSignedIn = isSignedIn,
+        _auth = auth;
+
+  /// This should be connected to Users Authenticaton status bloc:
+  void setIsSignedIn(bool value) {
+    _isSignedIn = value;
+    var route = const LaamsRoute.init();
+    if (!isSignedIn && _auth.publicRoutes.isNotEmpty) {
+      route = route.copyWith(name: _auth.publicRoutes.first);
+    }
+    final authenticated = _auth.authenticateOnIsSignedIn(
+      isSignedIn: _isSignedIn,
+      currentRoute: _routes.last,
+      newRoute: isSignedIn ? route.copyWith() : route.copyWith(),
+    );
+    _routes.clear();
+    _routes.add(authenticated);
+    notifyListeners();
+  }
+
+  /// Routes can be reset programmatically, from browser URL, or by Os itself.
+  /// If the [onResetRoutes] are called by OS, for example, called from
+  /// [LaamsRouterDelegate.setInitialRoutePath],
+  /// pease set [isInitial] to true. Programmatically calling it,
+  /// for instance, when a button is clicked, [isInitial] is always false
+  /// Same goes when change the browser URL.
+  void onResetRoutes(LaamsRoute newRoute, {bool isInitial = false}) {
+    if (_routes.isEmpty) _routes.add(const LaamsRoute.init());
+    final authenticated = _auth.authenticateResetAction(
+      isSignedIn: _isSignedIn,
+      currentRoute: _routes.last,
+      newRoute: newRoute,
+    );
+    _routes.clear();
+    _routes.add(authenticated);
+    if (!isInitial) return notifyListeners();
+  }
+
+  /// Helps add a new route on top of an existing route.
+  /// it `should` only be called programmatically.
+  void onPushRoute(LaamsRoute newRoute) {
+    final authenticated = _auth.authenticateResetAction(
+      isSignedIn: _isSignedIn,
+      currentRoute: _routes.last,
+      newRoute: newRoute,
+    );
+    _routes.removeWhere((element) => element == authenticated);
+    _routes.add(authenticated);
+    notifyListeners();
+  }
+
+  /// Replaces the current route with a new route, instead of pushing on top.
+  void onReplaceRoute(LaamsRoute newRoute) {
+    final authenticated = _auth.authenticateResetAction(
+      isSignedIn: _isSignedIn,
+      currentRoute: _routes.last,
+      newRoute: newRoute,
+    );
+    if (_routes.isNotEmpty) {
+      _routes.removeLast();
+      _routes.add(authenticated);
+      notifyListeners();
+    }
+  }
+
+  /// Replaces the current route with a new route, instead of pushing on top.
+  void onRemoveRoute(LaamsRoute newRoute) {
+    if (_routes.isNotEmpty && _routes.length > 1) {
+      _routes.removeWhere((e) => e.name == newRoute.name);
+    }
+  }
+
+  void onPopRoute() {
+    if (_routes.isNotEmpty && _routes.length > 1) {
+      _routes.removeLast();
+      notifyListeners();
+    }
+  }
+}

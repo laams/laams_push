@@ -178,6 +178,8 @@ class LaamsPage<T> extends Page<T> {
     return LaamsPage<T>._(
       key: ValueKey(route.name),
       name: route.name,
+      animationType: route.animationType ?? AnimationType.none,
+      animationDuration: route.animationDuration ?? 300,
       arguments: route.arguments,
       child: child,
     );

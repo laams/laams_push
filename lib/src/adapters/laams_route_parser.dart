@@ -2,25 +2,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../entities/laams_route.dart';
+import 'laams_route_mapper.dart';
 
-class LaamsRouteParser extends RouteInformationParser<LaamsRoutes> {
-  final String initialRoute;
-  LaamsRouteParser([this.initialRoute = '/']);
+class LaamsRouteParser extends RouteInformationParser<LaamsRoute> {
+  final LaamsRouteMapper _mapper;
+  const LaamsRouteParser() : _mapper = const LaamsRouteMapper();
   @override
-  Future<LaamsRoutes> parseRouteInformation(RouteInformation routeInformation) {
+  Future<LaamsRoute> parseRouteInformation(RouteInformation routeInformation) {
     final location = routeInformation.location;
-    if (location == null) {
-      return SynchronousFuture([LaamsRoute.init(name: initialRoute)]);
-    } else if (location == '/') {
-      return SynchronousFuture([LaamsRoute.init(name: initialRoute)]);
-    }
+    if (location == null) return SynchronousFuture(const LaamsRoute.init());
+    if (location == '/') return SynchronousFuture(const LaamsRoute.init());
     final uri = Uri.parse(location);
-    return SynchronousFuture(LaamsRoute.routesFromURI(uri));
+    final state = routeInformation.state;
+    return SynchronousFuture(_mapper.fromURI(uri).copyWith(state: state));
   }
 
   @override
-  RouteInformation? restoreRouteInformation(LaamsRoutes configuration) {
-    var uri = LaamsRoute.fromRoutes(configuration);
-    return RouteInformation(location: uri.path);
+  RouteInformation? restoreRouteInformation(LaamsRoute configuration) {
+    var uri = _mapper.toURI(configuration);
+    return RouteInformation(location: '$uri', state: configuration.state);
   }
 }
