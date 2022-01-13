@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 /// You can use a package of of your choice
 /// For this app, ChangeNotifier with Provider has been chosen.
 class UserBloc with ChangeNotifier {
-  bool _isSignedIn = false;
+  bool _isSignedIn = true;
   bool get isSignedIn => _isSignedIn;
   void signIn() {
     _isSignedIn = true;
@@ -76,8 +76,7 @@ class MyApp extends StatelessWidget {
       isUserSignedIn: userBloc.isSignedIn,
       theme: ThemeData.light(),
       title: 'Laams Router Application',
-      publicRoutes: const [SignInScreen.name, NotAllowedScreen.name],
-      notAllowedRoute: NotAllowedScreen.name,
+      publicRoutes: const [SignInScreen.name],
       onGeneratePages: (LaamsRoute route) {
         switch (route.name) {
           case HomeScreen.name:
@@ -89,8 +88,6 @@ class MyApp extends StatelessWidget {
           case ProductDetail.name:
             final product = Product.fromJson(route.query!);
             return LaamsPage.fromRoute(route, ProductDetail(product));
-          case NotAllowedScreen.name:
-            return LaamsPage.fromRoute(route, NotAllowedScreen(route));
           default:
             return LaamsPage.fromRoute(route, NotFoundScreen(route));
         }
@@ -113,31 +110,6 @@ class NotFoundScreen extends StatelessWidget {
         child: TextButton(
           onPressed: () => LaamsPush.replace(context, HomeScreen.name),
           child: const Text('Could Find the page, go back home?'),
-        ),
-      ),
-    );
-  }
-}
-
-/// It should be called as one of the pages of in
-/// [LaamsPushApp.onGeneratePages].
-/// By default all pages are protect, an unsigned in user is not
-/// allowed to access. if they do this page is displayed.
-class NotAllowedScreen extends StatelessWidget {
-  final LaamsRoute route;
-  static const String name = '/notAllowed';
-  const NotAllowedScreen(this.route, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Not allowed to access')),
-      body: Center(
-        child: TextButton(
-          onPressed: () => LaamsPush.replace(context, SignInScreen.name),
-          child: const Text(
-            'You are not signed in to access,Click to go to Signin Page',
-          ),
         ),
       ),
     );
