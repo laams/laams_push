@@ -10,7 +10,6 @@ import 'state/laams_push_state.dart';
 class LaamsPushApp extends StatefulWidget {
   final bool isUserSignedIn;
   final List<String> publicRoutes;
-  final String? notAllowedRoute;
   final LaamsPage Function(LaamsRoute route) onGeneratePages;
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
   final RouteInformationProvider? routeInformationProvider;
@@ -50,7 +49,6 @@ class LaamsPushApp extends StatefulWidget {
   const LaamsPushApp.router({
     Key? key,
     required this.isUserSignedIn,
-    required this.notAllowedRoute,
     required this.publicRoutes,
     required this.onGeneratePages,
     this.routeInformationProvider,
@@ -100,10 +98,7 @@ class _LaamsPushAppState extends State<LaamsPushApp> {
   void initState() {
     _state = LaamsPushState(
       widget.isUserSignedIn,
-      RouteAuthenticator(
-        publicRoutes: widget.publicRoutes,
-        notAllowedRoute: widget.notAllowedRoute ?? '/notallowed',
-      ),
+      RouteAuthenticator(publicRoutes: widget.publicRoutes),
     );
     // _state.setIsSignedIn(widget.isUserSignedIn);
     super.initState();

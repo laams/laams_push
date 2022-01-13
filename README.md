@@ -51,7 +51,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.light(),
       title: 'Laams Router Application',
       publicRoutes: const [SignInScreen.name, NotAllowedScreen.name],
-      notAllowedRoute: NotAllowedScreen.name,
       onGeneratePages: (LaamsRoute route) {
         switch (route.name) {
           case HomeScreen.name:
@@ -77,9 +76,6 @@ class MyApp extends StatelessWidget {
 * `isUserSignedIn`: displays a `screen` based on the user signed in status. You can provide the signed in status of the user using any of the available state management solutions. We have use `provider` in our example project, since it is easy to setup for smaller apps. 
 * `onGeneratePages`: maps [LaamsRoute] to [LaamsPage]. Think of it as `onGenerateRoutes` inside flutter `MaterialApp`. You instantiate your screens based on the `route.name`. Make user to add a `notfound` route as the default. 
 * `publicRoutes`: By default, all of the routes are protected, meaning a user who is not signed in cannot access any of the routes, except the public routes. list names of all your public routes here. 
-* `notAllowedRoute`: if a user who is not signed in tries to access projected routes, what UI should be displayed. enter the name here, and make sure to instantiate the UI itself inside `onGeneratePages`.
-
-
 
 ### 2. Use any of these methods from any part of your Widget tree: 
 ```dart

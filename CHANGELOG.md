@@ -1,3 +1,6 @@
+# 1.0.1
+* Fixed Minor Bugs
+  
 # 1.0.0
 * Released the stable version
 * It has all the listed functionalities

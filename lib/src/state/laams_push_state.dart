@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../adapters/route_authenticator.dart';
 import '../entities/laams_route.dart';
-import '../laams_router_delegate.dart';
 
 /// Keeps the state of the navigator stack.
 /// However you usually do not have to interact with it directly.
@@ -21,29 +20,16 @@ class LaamsPushState extends ChangeNotifier {
   /// This should be connected to Users Authenticaton status bloc:
   void setIsSignedIn(bool value) {
     _isSignedIn = value;
-    var route = const LaamsRoute.init();
-    if (!isSignedIn && _auth.publicRoutes.isNotEmpty) {
-      route = route.copyWith(name: _auth.publicRoutes.first);
-    }
-    final authenticated = _auth.authenticateOnIsSignedIn(
-      isSignedIn: _isSignedIn,
-      currentRoute: _routes.last,
-      newRoute: isSignedIn ? route.copyWith() : route.copyWith(),
-    );
+    if (_routes.isEmpty) _routes.add(const LaamsRoute.init());
+    final authenticated = _auth.authIsSignedIn(value, _routes.last);
     _routes.clear();
     _routes.add(authenticated);
     notifyListeners();
   }
 
-  /// Routes can be reset programmatically, from browser URL, or by Os itself.
-  /// If the [onResetRoutes] are called by OS, for example, called from
-  /// [LaamsRouterDelegate.setInitialRoutePath],
-  /// pease set [isInitial] to true. Programmatically calling it,
-  /// for instance, when a button is clicked, [isInitial] is always false
-  /// Same goes when change the browser URL.
   void onResetRoutes(LaamsRoute newRoute, {bool isInitial = false}) {
     if (_routes.isEmpty) _routes.add(const LaamsRoute.init());
-    final authenticated = _auth.authenticateResetAction(
+    final authenticated = _auth.authenticateRoute(
       isSignedIn: _isSignedIn,
       currentRoute: _routes.last,
       newRoute: newRoute,
@@ -56,7 +42,7 @@ class LaamsPushState extends ChangeNotifier {
   /// Helps add a new route on top of an existing route.
   /// it `should` only be called programmatically.
   void onPushRoute(LaamsRoute newRoute) {
-    final authenticated = _auth.authenticateResetAction(
+    final authenticated = _auth.authenticateRoute(
       isSignedIn: _isSignedIn,
       currentRoute: _routes.last,
       newRoute: newRoute,
@@ -68,7 +54,7 @@ class LaamsPushState extends ChangeNotifier {
 
   /// Replaces the current route with a new route, instead of pushing on top.
   void onReplaceRoute(LaamsRoute newRoute) {
-    final authenticated = _auth.authenticateResetAction(
+    final authenticated = _auth.authenticateRoute(
       isSignedIn: _isSignedIn,
       currentRoute: _routes.last,
       newRoute: newRoute,
