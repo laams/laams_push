@@ -72,7 +72,7 @@ mixin LaamsPush {
     String? fragment,
   }) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.laamsPush.onPushRoute(
+    return del?.state.onPushRoute(
       LaamsRoute(
         name: name,
         animationType: animationType,
@@ -128,7 +128,7 @@ mixin LaamsPush {
     String? fragment,
   }) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.laamsPush.onResetRoutes(
+    return del?.state.onResetRoutes(
       LaamsRoute(
         name: name,
         animationType: animationType,
@@ -185,7 +185,7 @@ mixin LaamsPush {
     String? fragment,
   }) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.laamsPush.onReplaceRoute(
+    return del?.state.onReplaceRoute(
       LaamsRoute(
         name: name,
         animationType: animationType,
@@ -242,7 +242,7 @@ mixin LaamsPush {
     String? fragment,
   }) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.laamsPush.onRemoveRoute(
+    return del?.state.onRemoveRoute(
       LaamsRoute(
         name: name,
         animationType: animationType,
@@ -258,6 +258,21 @@ mixin LaamsPush {
   /// Pops the top most `route` fromt the `route stack`.
   static void pop(BuildContext context) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.laamsPush.onPopRoute();
+    return del?.state.onPopRoute();
+  }
+
+  static LaamsRoute? route(BuildContext context) {
+    final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
+    return del?.state.routes.last;
+  }
+
+  static String? currentPath(BuildContext context) {
+    final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
+    return del?.state.routes.last.name;
+  }
+
+  static bool isCurrentPath(BuildContext context, String? currentPath) {
+    final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
+    return del?.state.routes.last.name == currentPath;
   }
 }

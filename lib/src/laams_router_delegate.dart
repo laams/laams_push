@@ -7,30 +7,30 @@ import 'state/laams_push_state.dart';
 
 class LaamsRouterDelegate extends RouterDelegate<LaamsRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<LaamsRoute> {
-  final LaamsPushState laamsPush;
+  final LaamsPushState state;
   final LaamsPage Function(LaamsRoute name) onGeneratePages;
-  LaamsRouterDelegate(this.laamsPush, this.onGeneratePages)
+  LaamsRouterDelegate(this.state, this.onGeneratePages)
       : navigatorKey = GlobalKey<NavigatorState>(),
         super() {
-    laamsPush.addListener(notifyListeners);
+    state.addListener(notifyListeners);
   }
 
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
   @override
-  LaamsRoute get currentConfiguration => laamsPush.routes.last;
+  LaamsRoute get currentConfiguration => state.routes.last;
 
   @override
   Future<void> setNewRoutePath(LaamsRoute configuration) {
     // if (kDebugMode) print('LaamsRouterDelegate.setNewRoutePath:$configuration');
-    laamsPush.onResetRoutes(configuration, isInitial: true);
+    state.onResetRoutes(configuration, isInitial: true);
     return SynchronousFuture<void>(null);
   }
 
   bool _onPopPage(Route<dynamic> route, dynamic result) {
     final bool success = route.didPop(result);
-    if (success) laamsPush.onPopRoute();
+    if (success) state.onPopRoute();
     return success;
   }
 
@@ -39,7 +39,7 @@ class LaamsRouterDelegate extends RouterDelegate<LaamsRoute>
     return Navigator(
       key: navigatorKey,
       pages: List<LaamsPage>.unmodifiable(
-        laamsPush.routes.map(onGeneratePages).toList(),
+        state.routes.map(onGeneratePages).toList(),
       ),
       onPopPage: _onPopPage,
     );
@@ -47,7 +47,7 @@ class LaamsRouterDelegate extends RouterDelegate<LaamsRoute>
 
   @override
   void dispose() {
-    laamsPush.removeListener(notifyListeners);
+    state.removeListener(notifyListeners);
     super.dispose();
   }
 }

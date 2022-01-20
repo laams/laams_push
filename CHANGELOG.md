@@ -1,3 +1,8 @@
+# 1.1.0
+* Fixed Minor Bugs
+* Added more functionalities APIs to LaamsPush
+
+
 # 1.0.1
 * Fixed Minor Bugs
   
