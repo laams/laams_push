@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../adapters/route_authenticator.dart';
 import '../entities/laams_route.dart';
+import 'route_authenticator.dart';
 
 /// Keeps the state of the navigator stack.
 /// However you usually do not have to interact with it directly.
@@ -20,7 +20,7 @@ class LaamsPushState extends ChangeNotifier {
   /// This should be connected to Users Authenticaton status bloc:
   void setIsSignedIn(bool value) {
     _isSignedIn = value;
-    if (_routes.isEmpty) _routes.add(const LaamsRoute.init());
+    if (_routes.isEmpty) _routes.add(const LaamsRoute('/'));
     final authenticated = _auth.authIsSignedIn(value, _routes.last);
     _routes.clear();
     _routes.add(authenticated);
@@ -28,7 +28,7 @@ class LaamsPushState extends ChangeNotifier {
   }
 
   void onResetRoutes(LaamsRoute newRoute, {bool isInitial = false}) {
-    if (_routes.isEmpty) _routes.add(const LaamsRoute.init());
+    if (_routes.isEmpty) _routes.add(const LaamsRoute('/'));
     final authenticated = _auth.authenticateRoute(
       isSignedIn: _isSignedIn,
       currentRoute: _routes.last,
@@ -69,7 +69,7 @@ class LaamsPushState extends ChangeNotifier {
   /// Replaces the current route with a new route, instead of pushing on top.
   void onRemoveRoute(LaamsRoute newRoute) {
     if (_routes.isNotEmpty && _routes.length > 1) {
-      _routes.removeWhere((e) => e.name == newRoute.name);
+      _routes.removeWhere((e) => e.path == newRoute.path);
     }
   }
 

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'entities/laams_route.dart';
-import 'laams_page.dart';
-import 'state/laams_push_state.dart';
+import '../entities/laams_route.dart';
+import '../usecases/laams_push_state.dart';
+import '../views/laams_page.dart';
 
 class LaamsRouterDelegate extends RouterDelegate<LaamsRoute>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<LaamsRoute> {

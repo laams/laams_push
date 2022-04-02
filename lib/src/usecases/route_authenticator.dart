@@ -8,11 +8,11 @@ class RouteAuthenticator {
     bool isSignedIn,
     LaamsRoute currentRoute,
   ) {
-    final bool isPublic = publicRoutes.any((e) => e == currentRoute.name);
-    if (isSignedIn && isPublic) return const LaamsRoute.init();
+    final bool isPublic = publicRoutes.any((e) => e == currentRoute.path);
+    if (isSignedIn && isPublic) return const LaamsRoute('/');
     if (isSignedIn && !isPublic) return currentRoute;
     if (!isSignedIn && isPublic) return currentRoute;
-    return LaamsRoute.init(name: publicRoutes.first);
+    return LaamsRoute(publicRoutes.first);
   }
 
   LaamsRoute authenticateRoute({
@@ -20,10 +20,10 @@ class RouteAuthenticator {
     required LaamsRoute currentRoute,
     required LaamsRoute newRoute,
   }) {
-    final bool isPublic = publicRoutes.any((e) => e == newRoute.name);
+    final bool isPublic = publicRoutes.any((e) => e == newRoute.path);
     if (isSignedIn && isPublic) return currentRoute;
     if (isSignedIn && !isPublic) return newRoute;
     if (!isSignedIn && isPublic) return newRoute;
-    return LaamsRoute.init(name: publicRoutes.first);
+    return LaamsRoute(publicRoutes.first);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'entities/enums/animation_type.dart';
-import 'entities/laams_route.dart';
+import '../entities/animation_type.dart';
+import '../entities/laams_route.dart';
 
 /// A page that extends [Page] with a custom [PageRouteBuilder]
 ///
@@ -176,11 +176,11 @@ class LaamsPage<T> extends Page<T> {
 
   static LaamsPage<T> fromRoute<T>(LaamsRoute route, Widget child) {
     return LaamsPage<T>._(
-      key: ValueKey(route.name),
-      name: route.name,
-      animationType: route.animationType ?? AnimationType.none,
-      animationDuration: route.animationDuration ?? 300,
-      arguments: route.arguments,
+      key: ValueKey(route.path),
+      name: route.path,
+      animationType: route.animationType,
+      animationDuration: route.duration,
+      arguments: route.query,
       child: child,
     );
   }

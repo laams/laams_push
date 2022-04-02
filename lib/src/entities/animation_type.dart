@@ -26,7 +26,9 @@ enum AnimationType {
   slideToEnd,
 }
 
+/// Parses animation to and from string
 extension AnimationTypeParser on AnimationType {
+  // Takes a string input `name` and returns AnimationType
   static AnimationType fromName(String? name) {
     if (name == null) return AnimationType.none;
     try {

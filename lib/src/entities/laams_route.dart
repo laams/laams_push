@@ -1,4 +1,4 @@
-import 'enums/animation_type.dart';
+import 'animation_type.dart';
 
 /// A list of [LaamsRoute]
 typedef LaamsRoutes = List<LaamsRoute>;
@@ -6,129 +6,103 @@ typedef LaamsRoutes = List<LaamsRoute>;
 /// It is a `Data Transfer Object` which holds the configuration for
 /// [LaamsPage]
 class LaamsRoute {
-  /// for instance if you have a `page` named `settings` then
-  /// you can assign the value of [name] as `settings` or `/settings`
-  final String name;
+  /// The `path` or `location` of the route:
+  /// ## Example:
+  /// ```dart
+  /// var simpleRoute = LaamsRoute(
+  /// path: '/home/products/:id',
+  /// )
+  ///
+  /// var complexRoute = LaamsRoute(
+  /// path: '/home/:slug/products/:id/update',
+  /// )
+  /// ```
+  /// The path portions prefixed with `:` are considered queries, such as `id`
+  final String _path;
+
+  /// if you have provided a path like: '/home/:slug/products/:id/update'
+  /// the path portions
+  /// then you must provide a query like this: <String, dynamic>{"id": "123"}
+  final Map<String, dynamic>? query;
+
+  /// Scrolling to a specific loation: /products#menu
+  final String? fragment;
 
   /// It will animate the route that is pushed on the stack.
   /// The default [animationType] is [AnimationType.none],
-  final AnimationType? animationType;
+  final AnimationType animationType;
 
   /// Amount of time it takes to navigate from one `route` to the other
-  /// in `miliseconds`
-  final int? animationDuration;
+  /// in `miliseconds`. Defaults to `250 miliseconds`
+  final int duration;
 
-  /// [arguments]are used for deeplinking.
-  /// Think of it as `query` after `path` in a URL.
-  ///
-  /// For example:
-  /// ```dart
-  /// final argument = <String, dynamic> {
-  /// 'productID': 123,
-  /// 'productName': 'Shirt',
-  /// }
-  /// ```
-  /// And if [name] is `product`
-  /// This will be shown in the browser URL [arguments],
-  /// `/product?productID=123&productName=Shirt',
-  /// you can then receive the [arguments] in the second page
-  /// as a Map<String, String> .
-  /// Must be `serializable` or will give out error.
-  final Object? arguments;
-
-  /// The state of the application in the [location].
-  /// The app can have different states even in the same location.
-  /// For example, the text inside a [TextField] or
-  /// the scroll position in a [ScrollView]. These widget states can
-  /// be stored in the [state].
-  ///
-  /// [state] must be serializable
-  final Object? state;
-
-  /// [arguments]are used for deeplinking.
-  /// Think of it as `query` after `path` in a URL.
-  ///
-  /// For example:
-  /// ```dart
-  /// final argument = <String, dynamic> {
-  /// 'productID': 123,
-  /// 'productName': 'Shirt',
-  /// }
-  /// ```
-  /// And if [name] is `product`
-  /// This will be shown in the browser URL [arguments],
-  /// `/product?productID=123&productName=Shirt',
-  /// you can then receive the [arguments] in the second page
-  /// as a Map<String, String> .
-  /// Must be `serializable` or will give out error.
-  final Map<String, dynamic>? query;
-
-  /// Helps you go to a specific part of the page it will be prefixed with `#`
-  /// for instance if you have a page with an info section then.
-  final String? fragment;
-
-  const LaamsRoute({
-    required this.name,
-    required this.animationType,
-    required this.animationDuration,
-    required this.arguments,
-    required this.state,
-    required this.query,
-    required this.fragment,
-  });
-
-  const LaamsRoute.init({
-    this.name = '/',
-    this.animationType,
-    this.animationDuration,
-    this.arguments,
-    this.state,
+  const LaamsRoute(
+    String path, {
     this.query,
     this.fragment,
-  });
+    this.animationType = AnimationType.none,
+    this.duration = 250,
+  }) : _path = path;
 
   LaamsRoute copyWith({
-    String? name,
-    AnimationType? animationType,
-    int? animationDuration,
-    Map<String, String>? arguments,
-    Object? state,
+    String? path,
     Map<String, dynamic>? query,
     String? fragment,
+    AnimationType? animationType,
+    int? animationDuration,
   }) {
     return LaamsRoute(
-      name: name ?? this.name,
-      animationType: animationType ?? this.animationType,
-      animationDuration: animationDuration ?? this.animationDuration,
-      arguments: arguments ?? this.arguments,
-      state: state ?? this.state,
+      path ?? _path,
       query: query ?? this.query,
       fragment: fragment ?? this.fragment,
+      animationType: animationType ?? this.animationType,
+      duration: animationDuration ?? duration,
     );
   }
 
-  @override
-  operator ==(other) {
-    if (other is! LaamsRoute) return false;
-    return name == other.name &&
-        animationType == other.animationType &&
-        animationDuration == other.animationDuration &&
-        arguments == other.arguments &&
-        state == other.state &&
-        query == other.query &&
-        fragment == other.fragment;
+  /// Get a specific field value from [query] map if not `null`
+  dynamic getQueryValue(String key) => query?[key];
+
+  /// Replaces all the query regex such `:id` to its actual value
+  /// and returns the result path as a [String].
+  String get path {
+    if (query == null || query?.entries == null) return _path;
+    String newPath = _path;
+    for (var e in query!.entries) {
+      newPath = newPath.replaceAll(':${e.key}', '${e.value}');
+    }
+    if (fragment == null || fragment!.isEmpty) return newPath;
+    return '$newPath#$fragment';
   }
 
   @override
-  int get hashCode =>
-      name.hashCode ^
-      animationType.hashCode ^
-      animationDuration.hashCode ^
-      arguments.hashCode ^
-      state.hashCode ^
-      query.hashCode ^
-      fragment.hashCode;
+  String toString() => path;
 
-  @override
-  String toString() => name;
+  /// Converts from `Uri` object
+  factory LaamsRoute.fromURI(Uri uri) {
+    var uriQuery = Map<String, dynamic>.from(uri.queryParameters);
+    var anim = uriQuery.remove('animationType');
+    return LaamsRoute(
+      uri.path,
+      query: uriQuery,
+      fragment: uri.fragment.isEmpty ? null : uri.fragment,
+      animationType: AnimationTypeParser.fromName(anim),
+      duration: int.tryParse(uriQuery.remove('duration') ?? '') ?? 250,
+    );
+  }
+
+  // Converts Laams Route to URI:
+  Uri toURI() {
+    var newQuery = <String, dynamic>{
+      'animationType': animationType,
+      'duration': duration,
+    }..addAll(query ?? {});
+    newQuery.removeWhere((key, value) => value == null);
+    newQuery = newQuery.map((k, v) => MapEntry(k, '$v'));
+    return Uri(
+      path: _path,
+      queryParameters: newQuery.isEmpty ? null : newQuery,
+      fragment: fragment,
+    );
+  }
 }

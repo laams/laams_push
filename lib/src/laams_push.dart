@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'entities/enums/animation_type.dart';
+import 'adapters/laams_router_delegate.dart';
+import 'entities/animation_type.dart';
 import 'entities/laams_route.dart';
-import 'laams_router_delegate.dart';
 
 /// Contains a set of Helper functions makes accessing [LaamsRouterDelegate]
 /// easy and conventient.
@@ -74,11 +74,11 @@ mixin LaamsPush {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
     return del?.state.onPushRoute(
       LaamsRoute(
-        name: name,
+        name,
         animationType: animationType,
-        animationDuration: animationDuration,
-        arguments: arguments,
-        state: state,
+        duration: animationDuration,
+        // arguments: arguments,
+        // state: state,
         query: query,
         fragment: fragment,
       ),
@@ -130,11 +130,11 @@ mixin LaamsPush {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
     return del?.state.onResetRoutes(
       LaamsRoute(
-        name: name,
+        name,
         animationType: animationType,
-        animationDuration: animationDuration,
-        arguments: arguments,
-        state: state,
+        duration: animationDuration,
+        // arguments: arguments,
+        // state: state,
         query: query,
         fragment: fragment,
       ),
@@ -187,11 +187,11 @@ mixin LaamsPush {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
     return del?.state.onReplaceRoute(
       LaamsRoute(
-        name: name,
+        name,
         animationType: animationType,
-        animationDuration: animationDuration,
-        arguments: arguments,
-        state: state,
+        duration: animationDuration,
+        // arguments: arguments,
+        // state: state,
         query: query,
         fragment: fragment,
       ),
@@ -244,11 +244,11 @@ mixin LaamsPush {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
     return del?.state.onRemoveRoute(
       LaamsRoute(
-        name: name,
+        name,
         animationType: animationType,
-        animationDuration: animationDuration,
-        arguments: arguments,
-        state: state,
+        duration: animationDuration,
+        // arguments: arguments,
+        // state: state,
         query: query,
         fragment: fragment,
       ),
@@ -268,11 +268,11 @@ mixin LaamsPush {
 
   static String? currentPath(BuildContext context) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.state.routes.last.name;
+    return del?.state.routes.last.path;
   }
 
   static bool isCurrentPath(BuildContext context, String? currentPath) {
     final del = Router.maybeOf(context)?.routerDelegate as LaamsRouterDelegate?;
-    return del?.state.routes.last.name == currentPath;
+    return del?.state.routes.last.path == currentPath;
   }
 }

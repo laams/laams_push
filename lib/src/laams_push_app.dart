@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'adapters/laams_route_parser.dart';
-import 'adapters/route_authenticator.dart';
+import 'adapters/laams_router_delegate.dart';
 import 'entities/laams_route.dart';
-import 'laams_page.dart';
-import 'laams_router_delegate.dart';
-import 'state/laams_push_state.dart';
+import 'usecases/laams_push_state.dart';
+import 'usecases/route_authenticator.dart';
+import 'views/laams_page.dart';
 
 class LaamsPushApp extends StatefulWidget {
   final bool isUserSignedIn;
