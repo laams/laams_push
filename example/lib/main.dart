@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
       title: 'Laams Router Application',
       publicRoutes: const [SignInScreen.name],
       onGeneratePages: (LaamsRoute route) {
-        switch (route.name) {
+        switch (route.path) {
           case HomeScreen.name:
             return LaamsPage.fromRoute(route, const HomeScreen());
           case SignInScreen.name:
@@ -105,7 +105,7 @@ class NotFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Cound Not Find ${route.name.toUpperCase()}')),
+      appBar: AppBar(title: Text('Cound Not Find ${route.path.toUpperCase()}')),
       body: Center(
         child: TextButton(
           onPressed: () => LaamsPush.replace(context, HomeScreen.name),
@@ -172,7 +172,7 @@ class ProductsScreen extends StatelessWidget {
           onTap: () => LaamsPush.push(
             context,
             ProductDetail.name,
-            query: bloc.products[index].toJson(),
+            query: {"id": bloc.products[index].id},
           ),
           title: Text(bloc.products[index].name),
           subtitle: Text('${bloc.products[index].id}'),
@@ -187,7 +187,7 @@ class ProductsScreen extends StatelessWidget {
 }
 
 class ProductDetail extends StatelessWidget {
-  static const String name = '/product';
+  static const String name = '/products/:id';
   final Product product;
   const ProductDetail(this.product, {Key? key}) : super(key: key);
 
